@@ -45,10 +45,10 @@
 </style>
 </head>
 <body class="bg-white dark:bg-black text-black dark:text-white font-sans transition-colors duration-0">
-<div class="max-w-5xl mx-auto px-6 sm:px-8 lg:px-10 py-10">
-  <header class="flex justify-between items-center mb-20">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 py-10">
+  <header class="flex flex-col gap-6 sm:flex-row sm:justify-between sm:items-center mb-16 sm:mb-20">
     <a class="text-xl font-bold brutalist-link" href="index.html">samridh.com<span class="text-primary">~</span></a>
-    <div class="flex items-center space-x-10">
+    <div class="flex flex-wrap items-center gap-4 sm:gap-8">
       <a class="text-xl brutalist-link" href="index.html">home</a>
       <a class="text-xl brutalist-link" href="blog.html">blog</a>
       <a class="text-xl brutalist-link" href="#">resume</a>
@@ -59,19 +59,19 @@
   </header>
 
   <main>
-    <section class="mb-16">
-      <h1 class="text-6xl uppercase font-bold text-black dark:text-white mb-4 leading-none">Blog</h1>
-      <p class="text-2xl text-black dark:text-white uppercase font-bold max-w-3xl">Insights, notes, and deep dives on building, tech, and strategy.</p>
+    <section class="mb-16 sm:mb-20">
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl uppercase font-bold text-black dark:text-white mb-4 leading-none">Blog</h1>
+      <p class="text-xl sm:text-2xl text-black dark:text-white uppercase font-bold max-w-3xl">Insights, notes, and deep dives on building, tech, and strategy.</p>
     </section>
 
-    <section class="mb-20">
-      <h2 class="text-4xl uppercase font-bold text-black dark:text-white mb-10">Latest Posts</h2>
+    <section class="mb-16 sm:mb-20">
+      <h2 class="text-3xl sm:text-4xl uppercase font-bold text-black dark:text-white mb-8 sm:mb-10">Latest Posts</h2>
 
-      <div id="posts" class="space-y-8"></div>
+      <div id="posts" class="space-y-6 sm:space-y-8"></div>
     </section>
   </main>
 
-  <footer class="mt-32 text-sm text-black dark:text-white flex justify-between items-center brutalist-border p-4">
+  <footer class="mt-24 sm:mt-32 text-sm text-black dark:text-white flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center brutalist-border p-4">
     <span class="uppercase">@sxmridhx0</span>
     <span class="uppercase"><span class="material-icons text-base align-middle">lens</span> v1.0.0</span>
   </footer>
@@ -181,23 +181,23 @@
         <div class="md:col-span-2">
           <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener">
             <div class="brutalist-border overflow-hidden">
-              <img src="${escapeHtml(p.image)}" alt="" class="object-cover w-full h-48 md:h-full"/>
+              <img src="${escapeHtml(p.image)}" alt="" class="object-cover w-full h-40 sm:h-48 md:h-full"/>
             </div>
           </a>
         </div>` : '';
 
       const textColClass = hasImage ? 'md:col-span-3' : 'md:col-span-5';
       const article = document.createElement('article');
-      article.className = 'post-card p-8 brutalist-border';
+      article.className = 'post-card p-6 sm:p-8 brutalist-border';
       article.innerHTML = `
-        <div class="grid md:grid-cols-5 gap-8 items-start">
+        <div class="grid md:grid-cols-5 gap-6 sm:gap-8 items-start">
           ${imgBlock}
-          <div class="${textColClass}">
+          <div class="${textColClass} space-y-3 sm:space-y-4">
             <p class="post-meta text-sm mb-2">${escapeHtml(formatDate(p.pubDate))}</p>
-            <h3 class="text-3xl uppercase font-bold mb-3 text-black dark:text-white">
+            <h3 class="text-2xl sm:text-3xl uppercase font-bold mb-3 text-black dark:text-white">
               <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener" class="brutalist-link">${escapeHtml(p.title)}</a>
             </h3>
-            <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener" class="text-lg brutalist-link">Read on Substack →</a>
+            <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener" class="text-base sm:text-lg brutalist-link">Read on Substack →</a>
           </div>
         </div>`;
       postsEl.appendChild(article);

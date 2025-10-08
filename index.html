@@ -237,6 +237,13 @@
         (function() {
             const RSS_URL = 'https://sxmridh.substack.com/feed';
             const container = document.getElementById('latest-post');
+            const CACHE_KEY = 'substack-latest-cache-v1';
+            const CACHE_TTL = 1000 * 60 * 30; // 30 minutes
+            const SOURCES = [
+                RSS_URL,
+                'https://api.allorigins.win/raw?url=' + encodeURIComponent(RSS_URL) + '&timestamp=' + Date.now(),
+                'https://r.jina.ai/' + RSS_URL
+            ];
 
             if (!container) return;
 
@@ -249,17 +256,50 @@
                   .replace(/'/g, '&#39;');
             }
 
-            async function fetchRSS() {
+            function readCache() {
                 try {
-                    const res = await fetch(RSS_URL, { headers: { 'Accept': 'application/rss+xml,text/xml;q=0.9,*/*;q=0.8' }});
-                    if (!res.ok) throw new Error('Direct fetch failed');
-                    return await res.text();
-                } catch (e) {
-                    const proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(RSS_URL);
-                    const res = await fetch(proxied);
-                    if (!res.ok) throw new Error('Proxy fetch failed');
-                    return await res.text();
+                    const raw = localStorage.getItem(CACHE_KEY);
+                    if (!raw) return null;
+                    const cached = JSON.parse(raw);
+                    if (!cached?.timestamp || Date.now() - cached.timestamp > CACHE_TTL) return null;
+                    return cached.xml || null;
+                } catch (err) {
+                    console.warn('Failed to read cache', err);
+                    return null;
                 }
+            }
+
+            function writeCache(xml) {
+                try {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify({ xml, timestamp: Date.now() }));
+                } catch (err) {
+                    console.warn('Failed to store cache', err);
+                }
+            }
+
+            async function fetchWithTimeout(url, options = {}, timeout = 6000) {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), timeout);
+                try {
+                    const res = await fetch(url, { ...options, signal: controller.signal });
+                    clearTimeout(timer);
+                    if (!res.ok) throw new Error('Request failed: ' + res.status);
+                    return await res.text();
+                } finally {
+                    clearTimeout(timer);
+                }
+            }
+
+            async function fetchRSS() {
+                let lastErr = null;
+                for (const url of SOURCES) {
+                    try {
+                        return await fetchWithTimeout(url, { headers: { 'Accept': 'application/rss+xml,text/xml;q=0.9,*/*;q=0.8' } });
+                    } catch (err) {
+                        lastErr = err;
+                    }
+                }
+                throw lastErr || new Error('Failed to fetch RSS');
             }
 
             function parseLatest(xmlText) {
@@ -325,13 +365,27 @@
             }
 
             (async function initLatest() {
-                try {
+                const cachedXml = readCache();
+                if (cachedXml) {
+                    try {
+                        const cachedPost = parseLatest(cachedXml);
+                        render(cachedPost);
+                    } catch (err) {
+                        console.warn('Failed to render cached post', err);
+                    }
+                } else {
                     container.innerHTML = '<div class="text-sm text-gray-500 dark:text-gray-400">Loading latest post…</div>';
+                }
+
+                try {
                     const xml = await fetchRSS();
+                    writeCache(xml);
                     const post = parseLatest(xml);
                     render(post);
                 } catch (e) {
-                    container.innerHTML = '<div class="text-sm text-red-600">Failed to load latest Substack post.</div>';
+                    if (!cachedXml) {
+                        container.innerHTML = '<div class="text-sm text-red-600">Failed to load latest Substack post.</div>';
+                    }
                     console.error(e);
                 }
             })();

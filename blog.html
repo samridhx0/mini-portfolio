@@ -72,6 +72,26 @@
     0%, 100% { opacity: 0.25; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.35); }
   }
+  .card-link-cta {
+    position: relative;
+    padding: 4px 0;
+  }
+  .card-link-cta::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 3px;
+    bottom: -3px;
+    left: 0;
+    background-color: currentColor;
+    transform-origin: bottom right;
+    transition: transform 0.3s ease-out;
+  }
+  .group:hover .card-link-cta::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
 </style>
 </head>
 <body class="bg-white dark:bg-black text-black dark:text-white font-sans transition-colors duration-0">
@@ -249,28 +269,27 @@
       const hasImage = !!p.image;
       const imgBlock = hasImage ? `
         <div class="md:col-span-2">
-          <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener">
-            <div class="brutalist-border overflow-hidden">
-              <img src="${escapeHtml(p.image)}" alt="" class="object-cover w-full h-40 sm:h-48 md:h-full"/>
-            </div>
-          </a>
+          <div class="brutalist-border overflow-hidden pointer-events-none">
+            <img src="${escapeHtml(p.image)}" alt="" class="object-cover w-full h-40 sm:h-48 md:h-full"/>
+          </div>
         </div>` : '';
 
       const textColClass = hasImage ? 'md:col-span-3' : 'md:col-span-5';
-      const article = document.createElement('article');
-      article.className = 'post-card p-6 sm:p-8 brutalist-border';
-      article.innerHTML = `
+      const card = document.createElement('a');
+      card.className = 'post-card group block p-6 sm:p-8 brutalist-border text-black dark:text-white';
+      card.href = p.link;
+      card.target = '_blank';
+      card.rel = 'noopener noreferrer';
+      card.innerHTML = `
         <div class="grid md:grid-cols-5 gap-6 sm:gap-8 items-start">
           ${imgBlock}
-          <div class="${textColClass} space-y-3 sm:space-y-4">
-            <p class="post-meta text-sm mb-2">${escapeHtml(formatDate(p.pubDate))}</p>
-            <h3 class="text-2xl sm:text-3xl uppercase font-bold mb-3 text-black dark:text-white">
-              <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener" class="brutalist-link">${escapeHtml(p.title)}</a>
-            </h3>
-            <a href="${escapeHtml(p.link)}" target="_blank" rel="noopener" class="text-base sm:text-lg brutalist-link">Read on Substack →</a>
+          <div class="${textColClass} space-y-4 sm:space-y-5">
+            <p class="post-meta text-sm">${escapeHtml(formatDate(p.pubDate))}</p>
+            <h3 class="text-2xl sm:text-3xl uppercase font-bold">${escapeHtml(p.title)}</h3>
+            <span class="inline-flex items-center gap-2 text-base sm:text-lg card-link-cta">Read on Substack →</span>
           </div>
         </div>`;
-      postsEl.appendChild(article);
+      postsEl.appendChild(card);
     });
   }
 
